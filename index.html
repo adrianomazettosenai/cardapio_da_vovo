@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabor da Vovó - Cardápio Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'vovo-red': '#D32F2F',
+                        'vovo-orange': '#FF8F00',
+                        'vovo-cream': '#FFF8E1',
+                        'vovo-brown': '#5D4037'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-vovo-cream min-h-screen">
+    <!-- Header -->
+    <header class="bg-vovo-red text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="text-4xl">👵</div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Sabor da Vovó</h1>
+                        <p class="text-sm opacity-90">Tradição desde 1992</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="simpleMode" class="bg-white text-vovo-red px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
+                        Modo Simples
+                    </button>
+                    <button id="adminBtn" class="bg-vovo-orange text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">
+                        Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-md w-full p-6">
+            <div class="text-center">
+                <div class="text-6xl mb-4">📱</div>
+                <h2 class="text-2xl font-bold text-vovo-brown mb-4">Bem-vindo ao nosso cardápio digital!</h2>
+                <p class="text-gray-600 mb-6">Navegue pelas categorias, veja fotos dos pratos e adicione seus favoritos ao pedido. É fácil e rápido!</p>
+                <button id="closeTutorial" class="bg-vovo-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors w-full">
+                    Entendi, vamos começar!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Category Navigation -->
+        <nav class="mb-8">
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button class="category-btn active bg-vovo-red text-white px-4 py-2 rounded-full font-medium hover:bg-red-700 transition-colors" data-category="all">
+                    Todos os Pratos
+                </button>
+                <button class="category-btn bg-white text-vovo-brown px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors border border-gray-200" data-category="entradas">
+                    🥗 Entradas
+                </button>
+                <button class="category-btn bg-white text-vovo-brown px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors border border-gray-200" data-category="principais">
+                    🍖 Pratos Principais
+                </button>
+                <button class="category-btn bg-white text-vovo-brown px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors border border-gray-200" data-category="sobremesas">
+                    🍰 Sobremesas
+                </button>
+                <button class="category-btn bg-white text-vovo-brown px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors border border-gray-200" data-category="bebidas">
+                    🥤 Bebidas
+                </button>
+            </div>
+        </nav>
+
+        <!-- Menu Items Grid -->
+        <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Menu items will be populated by JavaScript -->
+        </div>
+
+        <!-- Cart Summary -->
+        <div id="cartSummary" class="fixed bottom-4 right-4 bg-vovo-orange text-white p-4 rounded-xl shadow-lg hidden">
+            <div class="flex items-center space-x-3">
+                <div class="text-2xl">🛒</div>
+                <div>
+                    <p class="font-bold">Pedido: <span id="cartTotal">R$ 0,00</span></p>
+                    <p class="text-sm opacity-90"><span id="cartItems">0</span> itens</p>
+                </div>
+                <button id="viewCart" class="bg-white text-vovo-orange px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
+                    Ver Pedido
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-hidden">
+            <div class="p-6 border-b">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-vovo-brown">Seu Pedido</h2>
+                    <button id="closeCart" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+            </div>
+            <div id="cartContent" class="p-6 overflow-y-auto max-h-96">
+                <!-- Cart items will be populated here -->
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xl font-bold">Total:</span>
+                    <span id="cartModalTotal" class="text-2xl font-bold text-vovo-red">R$ 0,00</span>
+                </div>
+                <button id="sendOrder" class="w-full bg-vovo-red text-white py-3 rounded-lg font-bold hover:bg-red-700 transition-colors">
+                    Enviar Pedido para a Cozinha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div class="p-6 border-b bg-vovo-red text-white">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold">Painel Administrativo</h2>
+                    <button id="closeAdmin" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-96">
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-vovo-brown mb-3">Gerenciar Preços</h3>
+                        <div id="priceManager" class="space-y-3">
+                            <!-- Price management items will be populated here -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-vovo-brown mb-3">Promoções Ativas</h3>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Desconto de 15% - Pratos Principais</p>
+                                    <p class="text-sm text-gray-600">Válido até 31/12/2024</p>
+                                </div>
+                                <button class="text-red-600 hover:text-red-800 font-medium">Remover</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Mode Overlay -->
+    <div id="simpleModeOverlay" class="fixed inset-0 bg-white z-40 hidden">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center mb-8">
+                <button id="exitSimpleMode" class="bg-vovo-red text-white px-4 py-2 rounded-lg mb-4">← Voltar ao modo normal</button>
+                <h1 class="text-3xl font-bold text-vovo-brown mb-2">Cardápio Simplificado</h1>
+                <p class="text-gray-600">Navegação mais fácil para você</p>
+            </div>
+            <div id="simpleModeContent" class="space-y-4">
+                <!-- Simple mode content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Menu data
+        const menuData = [
+            {
+                id: 1,
+                name: "Salada da Casa",
+                category: "entradas",
+                price: 18.90,
+                description: "Mix de folhas verdes, tomate cereja, queijo branco e molho especial da vovó",
+                image: "🥗",
+                promotion: false
+            },
+            {
+                id: 2,
+                name: "Bolinho de Bacalhau",
+                category: "entradas",
+                price: 24.90,
+                description: "6 unidades do tradicional bolinho, servido com molho tártaro",
+                image: "🐟",
+                promotion: false
+            },
+            {
+                id: 3,
+                name: "Feijoada Completa",
+                category: "principais",
+                price: 45.90,
+                description: "Feijoada tradicional com todos os acompanhamentos: arroz, farofa, couve e laranja",
+                image: "🍲",
+                promotion: true,
+                originalPrice: 54.90
+            },
+            {
+                id: 4,
+                name: "Bife à Parmegiana",
+                category: "principais",
+                price: 38.90,
+                description: "Bife empanado com molho de tomate, queijo derretido, arroz e batata frita",
+                image: "🥩",
+                promotion: true,
+                originalPrice: 45.90
+            },
+            {
+                id: 5,
+                name: "Pudim da Vovó",
+                category: "sobremesas",
+                price: 12.90,
+                description: "Pudim caseiro com calda de caramelo, receita tradicional da família",
+                image: "🍮",
+                promotion: false
+            },
+            {
+                id: 6,
+                name: "Brigadeiro Gourmet",
+                category: "sobremesas",
+                price: 8.90,
+                description: "3 unidades de brigadeiro artesanal com diferentes coberturas",
+                image: "🍫",
+                promotion: false
+            },
+            {
+                id: 7,
+                name: "Suco Natural",
+                category: "bebidas",
+                price: 8.90,
+                description: "Laranja, limão, maracujá ou acerola. 500ml",
+                image: "🧃",
+                promotion: false
+            },
+            {
+                id: 8,
+                name: "Refrigerante",
+                category: "bebidas",
+                price: 6.90,
+                description: "Coca-Cola, Guaraná ou Fanta. Lata 350ml",
+                image: "🥤",
+                promotion: false
+            }
+        ];
+
+        let cart = [];
+        let currentCategory = 'all';
+        let isSimpleMode = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMenu();
+            setupEventListeners();
+            
+            // Show tutorial on first visit
+            if (!localStorage.getItem('tutorialSeen')) {
+                document.getElementById('tutorialModal').classList.remove('hidden');
+            }
+        });
+
+        function setupEventListeners() {
+            // Tutorial
+            document.getElementById('closeTutorial').addEventListener('click', function() {
+                document.getElementById('tutorialModal').classList.add('hidden');
+                localStorage.setItem('tutorialSeen', 'true');
+            });
+
+            // Category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentCategory = this.dataset.category;
+                    updateCategoryButtons();
+                    renderMenu();
+                });
+            });
+
+            // Simple mode toggle
+            document.getElementById('simpleMode').addEventListener('click', toggleSimpleMode);
+            document.getElementById('exitSimpleMode').addEventListener('click', toggleSimpleMode);
+
+            // Admin panel
+            document.getElementById('adminBtn').addEventListener('click', function() {
+                document.getElementById('adminPanel').classList.remove('hidden');
+                renderPriceManager();
+            });
+            document.getElementById('closeAdmin').addEventListener('click', function() {
+                document.getElementById('adminPanel').classList.add('hidden');
+            });
+
+            // Cart
+            document.getElementById('viewCart').addEventListener('click', function() {
+                document.getElementById('cartModal').classList.remove('hidden');
+                renderCart();
+            });
+            document.getElementById('closeCart').addEventListener('click', function() {
+                document.getElementById('cartModal').classList.add('hidden');
+            });
+
+            // Send order
+            document.getElementById('sendOrder').addEventListener('click', sendOrder);
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('menuGrid');
+            const filteredItems = currentCategory === 'all' ? menuData : menuData.filter(item => item.category === currentCategory);
+            
+            grid.innerHTML = filteredItems.map(item => `
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                    <div class="p-6">
+                        <div class="text-center mb-4">
+                            <div class="text-6xl mb-2">${item.image}</div>
+                            <h3 class="text-xl font-bold text-vovo-brown mb-2">${item.name}</h3>
+                            <p class="text-gray-600 text-sm mb-4">${item.description}</p>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-left">
+                                ${item.promotion ? `
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-lg font-bold text-vovo-red">R$ ${item.price.toFixed(2)}</span>
+                                        <span class="text-sm text-gray-500 line-through">R$ ${item.originalPrice.toFixed(2)}</span>
+                                    </div>
+                                    <div class="text-xs text-green-600 font-medium">15% OFF</div>
+                                ` : `
+                                    <span class="text-lg font-bold text-vovo-brown">R$ ${item.price.toFixed(2)}</span>
+                                `}
+                            </div>
+                            <button onclick="addToCart(${item.id})" class="bg-vovo-orange text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors">
+                                Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSimpleMode() {
+            const content = document.getElementById('simpleModeContent');
+            const filteredItems = currentCategory === 'all' ? menuData : menuData.filter(item => item.category === currentCategory);
+            
+            content.innerHTML = filteredItems.map(item => `
+                <div class="bg-white rounded-lg p-6 shadow-md">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-4xl">${item.image}</div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-vovo-brown">${item.name}</h3>
+                            <p class="text-gray-600 mb-2">${item.description}</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-2xl font-bold text-vovo-red">R$ ${item.price.toFixed(2)}</span>
+                                <button onclick="addToCart(${item.id})" class="bg-vovo-orange text-white px-6 py-3 rounded-lg font-bold text-lg hover:bg-orange-600 transition-colors">
+                                    ADICIONAR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSimpleMode() {
+            isSimpleMode = !isSimpleMode;
+            const overlay = document.getElementById('simpleModeOverlay');
+            
+            if (isSimpleMode) {
+                overlay.classList.remove('hidden');
+                renderSimpleMode();
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function updateCategoryButtons() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                if (btn.dataset.category === currentCategory) {
+                    btn.classList.add('active', 'bg-vovo-red', 'text-white');
+                    btn.classList.remove('bg-white', 'text-vovo-brown', 'border', 'border-gray-200');
+                } else {
+                    btn.classList.remove('active', 'bg-vovo-red', 'text-white');
+                    btn.classList.add('bg-white', 'text-vovo-brown', 'border', 'border-gray-200');
+                }
+            });
+        }
+
+        function addToCart(itemId) {
+            const item = menuData.find(i => i.id === itemId);
+            const existingItem = cart.find(i => i.id === itemId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({...item, quantity: 1});
+            }
+            
+            updateCartSummary();
+            
+            // Show success feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Adicionado!';
+            button.classList.add('bg-green-500');
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-500');
+            }, 1000);
+        }
+
+        function updateCartSummary() {
+            const summary = document.getElementById('cartSummary');
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            document.getElementById('cartTotal').textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('cartItems').textContent = itemCount;
+            
+            if (cart.length > 0) {
+                summary.classList.remove('hidden');
+            } else {
+                summary.classList.add('hidden');
+            }
+        }
+
+        function renderCart() {
+            const content = document.getElementById('cartContent');
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (cart.length === 0) {
+                content.innerHTML = '<p class="text-center text-gray-500">Seu carrinho está vazio</p>';
+            } else {
+                content.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between py-3 border-b">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-2xl">${item.image}</div>
+                            <div>
+                                <h4 class="font-medium">${item.name}</h4>
+                                <p class="text-sm text-gray-600">R$ ${item.price.toFixed(2)} cada</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="updateQuantity(${item.id}, -1)" class="bg-gray-200 text-gray-700 w-8 h-8 rounded-full hover:bg-gray-300">-</button>
+                            <span class="font-medium">${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, 1)" class="bg-gray-200 text-gray-700 w-8 h-8 rounded-full hover:bg-gray-300">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('cartModalTotal').textContent = `R$ ${total.toFixed(2)}`;
+        }
+
+        function updateQuantity(itemId, change) {
+            const item = cart.find(i => i.id === itemId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== itemId);
+                }
+            }
+            updateCartSummary();
+            renderCart();
+        }
+
+        function sendOrder() {
+            if (cart.length === 0) return;
+            
+            // Simulate sending order to kitchen system
+            const orderNumber = Math.floor(Math.random() * 1000) + 1;
+            const orderData = {
+                number: orderNumber,
+                items: cart,
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                timestamp: new Date().toISOString()
+            };
+            
+            // In a real implementation, this would send to the kitchen system
+            console.log('Pedido enviado para a cozinha:', orderData);
+            
+            alert(`Pedido #${orderNumber} enviado para a cozinha com sucesso!\n\nTotal: R$ ${orderData.total.toFixed(2)}\n\nTempo estimado: 25-30 minutos`);
+            
+            // Clear cart
+            cart = [];
+            updateCartSummary();
+            document.getElementById('cartModal').classList.add('hidden');
+        }
+
+        function renderPriceManager() {
+            const manager = document.getElementById('priceManager');
+            manager.innerHTML = menuData.map(item => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">${item.image}</span>
+                        <span class="font-medium">${item.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">R$</span>
+                        <input type="number" value="${item.price.toFixed(2)}" step="0.10" 
+                               class="w-20 px-2 py-1 border rounded text-center"
+                               onchange="updatePrice(${item.id}, this.value)">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updatePrice(itemId, newPrice) {
+            const item = menuData.find(i => i.id === itemId);
+            if (item) {
+                item.price = parseFloat(newPrice);
+                renderMenu();
+                if (isSimpleMode) renderSimpleMode();
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96849e0287c2535f',t:'MTc1NDA0Mzc3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
